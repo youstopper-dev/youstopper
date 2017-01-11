@@ -1,0 +1,17 @@
+{
+	"extension_name": {
+		"message": "YouStopper for YouTube™"
+	},
+	"extension_description": {
+		"message": "Prevents YouTube™ videos autoplay"
+	},
+	"extension_extended_description": {
+		"message": "Prevents YouTube™ videos from starting to play automatically when you open them. Doesn't affect ads so it's better to use together with an Ad-Blocking extension like uBlock Origin. Doesn't stop sutoplaying in playlists."
+	},
+	"ba_click2disable": {
+		"message": "YouStopper is Enabled.\nClick to disbale."
+	},
+	"ba_click2enable": {
+		"message": "YouStopper is Disabled.\nClick to enable."
+	}
+}
