@@ -36,5 +36,12 @@
     "storage"
   ],
   
-  "minimum_chrome_version": "50"
+  "minimum_chrome_version": "50",
+  
+  "applications": {
+    "gecko": {
+      "id": "{276d45de-88ec-42d2-a950-69fcf18095ac}",
+      "strict_min_version": "50.0"
+    }
+  }
 }

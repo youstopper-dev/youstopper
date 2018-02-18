@@ -9,27 +9,9 @@
 	function toLower(s) {
 		return typeof s == 'string' ? s.toLowerCase() : s;
 	}
-
-	function parseSearchString(s) {
-		var m = new Map(),
-			decode = wnd.decodeURIComponent,
-			parts, i, len, key, value, pair;
-			
-		if (s.length > 0 && s.charAt(0) == '?') {
-			s = s.substring(1);
-		}
-
-		parts = s.split('&');
-		for (i = 0, len = parts.length; i < len; ++i) {
-			pair = parts[i].split('=');
-			if (pair.length == 2) {
-				key = decode(pair[0]);
-				value = decode(pair[1]);
-				m.set(key, value);
-			}
-		}
-		
-		return m;
+	
+	function isEmpty(s) {
+		return s == null || s.length == 0;
 	}
 
 	function getSingleParameter(queryString, paramName) {
@@ -120,12 +102,14 @@
 	};
 
 	PlayerStopper.prototype.wait4playerState = function(player) {
+		var self = this;
 		return new Promise(function(resolve, reject) {
 			function checkState(player) {
-				var state = player.getPlayerState();
-				if (state < 0) {
+				if (self.isDestroyed) {
 					return reject;
 				}
+				var state = player.getPlayerState();
+				log('player state == ', state);
 				if (state == 1 || state == 2 || state == 5) {
 					return resolve;
 				}
@@ -202,9 +186,8 @@
 		this.isDestroyed = true;
 	};
 
-	function isPlaylistPage(doc) {
-		var listId = getSingleParameter(doc.location.search, 'list');
-		return listId != null && listId.length > 0;
+	function getPlaylistId(doc) {
+		return getSingleParameter(doc.location.search, 'list');
 	}
 
 	function observeSettings(changeCallback) {
@@ -242,15 +225,43 @@
 			mo.observe(settingsEl, {'attributes': true, 'childList': false, 'subtree': false, 'attributeFilter': ['data-disabled', 'data-logging-enabled']});
 		});
 	}
+	
+	function wait4navmanager(doc) {
+		return new Promise(function check(resolve, reject) { 
+			var ytNavManagers = doc.getElementsByTagName('yt-navigation-manager');
+			if (ytNavManagers.length > 0) {
+				resolve(ytNavManagers[0]);
+			}
+			else {
+				wnd.setTimeout(check, 100, resolve, reject);
+			}
+		});
+	}
 
 	function main() {
 		var playerStopper = null,
 			disabled = false,
-			loggingEnabled = false;
+			prevPlaylistId = null;
 
 		function onNavigated() {
-			destroyStopper();
-			if (!disabled && toLower(doc.location.pathname) == '/watch' && !isPlaylistPage(doc)) {
+			var oldPlaylistId,
+				newPlaylistId;
+				
+			log('onNavigated', doc.location.href);
+			if (playerStopper != null) {
+				return;
+			}
+			
+			if (toLower(doc.location.pathname) != '/watch') {
+				prevPlaylistId = null;
+				return;
+			}
+			
+			oldPlaylistId = prevPlaylistId;
+			newPlaylistId = getPlaylistId(doc);
+			prevPlaylistId = newPlaylistId;
+			
+			if (!disabled && (isEmpty(newPlaylistId) || oldPlaylistId != newPlaylistId)) {
 				playerStopper = new PlayerStopper();
 			}
 		}
@@ -272,12 +283,16 @@
 				destroyStopper();
 			}
 
-			loggingEnabled = settings['loggingEnabled'];
-			log = loggingEnabled ? realLog : emptyFn;
+			log = settings['loggingEnabled'] ? realLog : emptyFn;
 		});
 
 		doc.addEventListener('spfrequest', function() { wnd.setTimeout(onNavigatingOut, 0); }, false);
 		doc.addEventListener('spfdone', function() { wnd.setTimeout(onNavigated, 0); }, false);
+		wait4navmanager(doc).then(function(ytNavManager) {
+			ytNavManager.addEventListener('yt-navigate-start', function() { wnd.setTimeout(onNavigatingOut, 0); }, false);
+			ytNavManager.addEventListener('yt-navigate-finish', function() { wnd.setTimeout(onNavigated, 0); }, false);
+		});
+		
 		onNavigated();
 	}
 

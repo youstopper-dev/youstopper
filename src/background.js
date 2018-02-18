@@ -21,13 +21,13 @@
 		chrome.browserAction.setIcon({'path': disabled ? disabledIconObj : enabledIconObj});
 	}
 
-	chrome.storage.sync.get({'disabled': false}, function (stotageVal) {
-		updateBrowserAction(stotageVal['disabled']);
+	chrome.storage.sync.get({'disabled': false}, function (storageVal) {
+		updateBrowserAction(storageVal['disabled']);
 	});
 
 	chrome.browserAction.onClicked.addListener(function () {
-		chrome.storage.sync.get({'disabled': false}, function (stotageVal) {
-			var disabled = !stotageVal['disabled'];
+		chrome.storage.sync.get({'disabled': false}, function (storageVal) {
+			var disabled = !storageVal['disabled'];
 			chrome.storage.sync.set({'disabled': disabled}, function() {
 				updateBrowserAction(disabled);
 			});

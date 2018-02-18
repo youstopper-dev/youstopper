@@ -4,7 +4,7 @@
 	function wait4doc(doc) {
 		return new Promise(function(resolve, reject) {
 			var state = doc.readyState;
-			if (state == "loading") {
+			if (state == 'loading') {
 				doc.addEventListener('DOMContentLoaded', function onDomLoaded() {
 					doc.removeEventListener('DOMContentLoaded', onDomLoaded, false);
 					resolve(doc);
