@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "YouStopper",
   "description": "__MSG_extension_description__",
-  "version": "0.1",
+  "version": "0.2",
   "default_locale": "en",
   "icons": {
     "32": "icons/youstop_icon_32.png",
